@@ -24,13 +24,13 @@
 | Mani Athankarayan | 12633 | Mani@123 |
 | Rahul Tripathi | 12533 | Rahul@123 |
 | Varma Selvaraj | 12922 | Varma@123 |
-| Sabarathinam Loganathan | 10606 | Sabarathinam@123 |
+
 
 ### Employees — Sample
 | Name | Emp ID | Password |
 |------|--------|----------|
 | Yun-Cheng Zhang | 5310 | Yun@123 |
-| Aswanth Raja | 11741 | Aswanth@123 |
+
 
 > **Password pattern:** `FirstName@123` (check `data/employees.js` for all)
 
