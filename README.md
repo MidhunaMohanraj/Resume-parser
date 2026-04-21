@@ -15,21 +15,19 @@
 ### Manager (L2)
 | Name | Emp ID | Password |
 |------|--------|----------|
-| Parthiban Pavadai Balan | 10191 | Parthiban@123 |
+| Parthiban Pavadai Balan | 10191 | 10191 |
 
 ### Tech Leads (L1) — Sample
 | Name | Emp ID | Password |
 |------|--------|----------|
-| Deepak Nagaraju | 10100 | Deepak@123 |
-| Mani Athankarayan | 12633 | Mani@123 |
-| Rahul Tripathi | 12533 | Rahul@123 |
-| Varma Selvaraj | 12922 | Varma@123 |
+| Deepak Nagaraju | 10100 | 10100 |
+| Mani Athankarayan | 12633 | 12633 |
 
 
 ### Employees — Sample
 | Name | Emp ID | Password |
 |------|--------|----------|
-| Yun-Cheng Zhang | 5310 | Yun@123 |
+| Yun-Cheng Zhang | 5310 | 5310 |
 
 
 > **Password pattern:** `FirstName@123` (check `data/employees.js` for all)
