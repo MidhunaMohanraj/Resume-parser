@@ -1,4 +1,4 @@
-# Tessolve HR Portal v2
+# Tessolve Resume Parser Portal
 
 ## 🚀 Run in VS Code
 
