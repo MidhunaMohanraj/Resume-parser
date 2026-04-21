@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Tessolve — IT/HR Helpdesk</title>
+  <link rel="icon" href="logo.jpg"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div class="hd-header">
+  <div style="display:flex;align-items:center;gap:1rem">
+    <img src="logo.jpg" style="height:36px" alt="Tessolve"/>
+    <div><h3 style="font-size:1rem">IT / HR Helpdesk</h3><p style="font-size:.75rem;color:var(--text-muted)">Support Team Dashboard</p></div>
+  </div>
+  <div style="display:flex;gap:.75rem;align-items:center">
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></div>
+    <span class="badge badge-orange">Support Team Access</span>
+  </div>
+</div>
+
+<div style="padding:2rem;max-width:1200px;margin:auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+    <h2>All Employee Tickets</h2>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+      <!-- Filters -->
+      <select id="filterStatus" onchange="applyFilters()" style="padding:.5rem .75rem;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+      <select id="filterCategory" onchange="applyFilters()" style="padding:.5rem .75rem;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:.85rem">
+        <option value="">All Categories</option>
+        <option>IT / Access Issue</option>
+        <option>HR / Payroll</option>
+        <option>Infrastructure</option>
+        <option>Policy Query</option>
+        <option>Other</option>
+      </select>
+      <input id="filterSearch" oninput="applyFilters()" placeholder="Search name / ID…" style="padding:.5rem .75rem;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:.85rem;width:180px"/>
+      <button class="btn btn-outline btn-sm" onclick="loadIssues()">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="stats-row" id="hdStats"></div>
+
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <div class="table-wrapper" id="issueTableArea"></div>
+      <div id="hdPagination" style="padding:1rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;border-top:1px solid var(--border)"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.hd-header{background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+</style>
+
+<script>
+const ITEMS_PER_PAGE = 10;
+let allIssues = [];
+let filteredIssues = [];
+let currentPage = 1;
+
+const theme = localStorage.getItem('tsl_theme');
+if (theme) document.documentElement.setAttribute('data-theme', theme);
+
+function toggleTheme() {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('tsl_theme', next);
+}
+
+function loadIssues() {
+  allIssues = JSON.parse(localStorage.getItem('tsl_issues') || '[]');
+  applyFilters();
+  renderStats();
+}
+
+function renderStats() {
+  const open = allIssues.filter(i => i.status === 'Open').length;
+  const resolved = allIssues.filter(i => i.status === 'Resolved').length;
+  document.getElementById('hdStats').innerHTML = `
+    <div class="stat-card orange"><div class="stat-icon">🔴</div><div class="stat-value">${open}</div><div class="stat-label">Open</div></div>
+    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-value">${resolved}</div><div class="stat-label">Resolved</div></div>
+    <div class="stat-card blue"><div class="stat-icon">📋</div><div class="stat-value">${allIssues.length}</div><div class="stat-label">Total</div></div>`;
+}
+
+function applyFilters() {
+  const status   = document.getElementById('filterStatus').value;
+  const category = document.getElementById('filterCategory').value;
+  const search   = document.getElementById('filterSearch').value.toLowerCase();
+  filteredIssues = allIssues.filter(i => {
+    if (status   && i.status   !== status)   return false;
+    if (category && i.category !== category) return false;
+    if (search && !i.empName.toLowerCase().includes(search) && !String(i.empId).includes(search)) return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const page  = filteredIssues.slice().reverse().slice(start, start + ITEMS_PER_PAGE);
+  const area  = document.getElementById('issueTableArea');
+
+  if (filteredIssues.length === 0) {
+    area.innerHTML = `<div class="empty-state"><div class="empty-icon">🎉</div><h3>No tickets found</h3></div>`;
+    document.getElementById('hdPagination').innerHTML = '';
+    return;
+  }
+
+  area.innerHTML = `<table>
+    <thead><tr><th>Ticket</th><th>Emp ID</th><th>Name</th><th>Category</th><th>Issue</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>${page.map(i => `
+      <tr>
+        <td><strong>#${String(i.id).slice(-4)}</strong></td>
+        <td><span class="badge badge-gray">${i.empId}</span></td>
+        <td>${i.empName}</td>
+        <td><span class="badge badge-blue">${i.category}</span></td>
+        <td style="max-width:260px;word-break:break-word">${i.text}</td>
+        <td>${i.date}</td>
+        <td><span class="badge badge-${i.status==='Open'?'orange':'green'}">${i.status}</span></td>
+        <td>
+          ${i.status==='Open'
+            ? `<button class="btn btn-secondary btn-sm" onclick="changeStatus(${i.id},'Resolved')">✓ Resolve</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="changeStatus(${i.id},'Open')">↩ Reopen</button>`}
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+
+  renderPagination();
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(filteredIssues.length / ITEMS_PER_PAGE);
+  const pg = document.getElementById('hdPagination');
+  if (totalPages <= 1) { pg.innerHTML=''; return; }
+  let html = '';
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="btn btn-sm ${i===currentPage?'btn-primary':'btn-outline'}" onclick="goToPage(${i})">${i}</button>`;
+  }
+  pg.innerHTML = `<span style="color:var(--text-muted);font-size:.8rem;margin-right:.5rem">Page ${currentPage} of ${totalPages}</span>` + html;
+}
+
+function goToPage(p) { currentPage = p; renderTable(); }
+
+function changeStatus(id, status) {
+  const issues = JSON.parse(localStorage.getItem('tsl_issues') || '[]');
+  const i = issues.find(i => i.id === id);
+  if (i) { i.status = status; localStorage.setItem('tsl_issues', JSON.stringify(issues)); loadIssues(); }
+}
+
+loadIssues();
+</script>
+</body>
+</html>
